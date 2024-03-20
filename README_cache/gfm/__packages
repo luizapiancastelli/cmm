@@ -1,0 +1,12 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+dplyr
+reshape2
+Rcpp
+ggplot2
+gridExtra

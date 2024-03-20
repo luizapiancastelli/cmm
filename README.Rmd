@@ -5,8 +5,21 @@ output: github_document
 ---
 
 Configuration: please ensure that you have a C++ compiler properly set up.
-```{r}
-library(Rcpp)
+```{r, message = FALSE}
+
+# Package names
+packages <- c("dplyr", "reshape2", "Rcpp", "ggplot2", "gridExtra")
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# Packages loading
+invisible(lapply(packages, library, character.only = TRUE))
+
+
 sourceCpp("cmm_cpp.cpp")
 source("cmm_functions.R")
 ```
