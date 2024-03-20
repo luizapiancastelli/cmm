@@ -1,0 +1,76 @@
+---
+title: "Clustered Mallows Model"
+author: "Luiza Piancastelli"
+output: html_document
+---
+
+Configuration: please ensure that you have a C++ compiler properly set up.
+```{r}
+library(Rcpp)
+sourceCpp("cmm_cpp.cpp")
+source("cmm_functions.R")
+```
+
+
+## Simulating CMM data 
+
+```{r}
+z = sort(rep(1:4, 2))
+theta = 0.8
+
+Pi = rcmm(100, theta, z, 'h')
+
+head(Pi)
+dim(Pi)
+
+apply(Pi, 2, function(x){prop.table(table(x))})
+```
+
+## Maximum likelihood estimation 
+
+
+```{r}
+anneal = seq(0.01, 2, 0.01) #Annealing sequence for z optimization
+eps = 10^(-2)               #Tolerance of algorithm
+
+CT = rep(2, 4) #Clustering Table (CT)
+CT
+
+mle = MLE_fit_cmm(CT, Pi, anneal, eps, dist = 'h')
+
+mle$z_mle
+mle$theta_mle
+
+```
+
+Graphical summary of the fitted partition:
+
+```{r}
+plot_rank_probs(Pi, mle$z_mle)
+```
+
+Let us fit the simulated data with the mispecified distance and investigate model choice.
+
+```{r}
+mle2 = MLE_fit_cmm(CT, Pi, anneal, eps, dist = 'k')
+
+I_criterion(mle, 10000)
+I_criterion(mle2, 10000)
+
+```
+
+## Bayesian inference with AEA
+
+```{r, message = FALSE, cache=TRUE}
+mcmc = cmm_MCMC(CT, Pi, 1000, "h", prior_theta= list(shape = 2, rate = 2))
+
+mcmc$accepted_theta
+
+theta_chain = data.frame("iter" = 1:1000, "value" = mcmc$theta)
+density = ggplot(theta_chain, aes(x = value))+geom_density(adjust =5, fill = 'cyan3', alpha = 0.5)+xlim(0,1)+theme_bw()
+trace  = ggplot(theta_chain, aes(y = value, x = iter))+geom_line()+theme_bw()
+
+grid.arrange(density, trace, ncol =2)
+
+```
+
