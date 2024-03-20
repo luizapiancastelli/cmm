@@ -569,3 +569,14 @@ pseudo_sampler= function(z, theta){
   
 }
 
+partition_from_z = function(z, item_names = 1:length(z)){
+  L =length(unique(z))
+  groups = list();
+  for(l in 1:L){
+    groups = append(groups, list(item_names[which(z==l)]  ))
+  }
+  return(groups)
+}
+
+
+
